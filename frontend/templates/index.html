@@ -1,0 +1,44 @@
+﻿<div class="main">
+    <div class="container mb-5">
+        <h1>Главная</h1>
+        <div class="main-dates-wrapper d-flex align-content-center mb-5">
+            <div class="btn-wrapper">
+                <button id="btn-filter-day" type="button" class="btn btn-outline-dark me-2">Сегодня</button>
+                <button id="btn-filter-week" type="button" class="btn btn-outline-dark me-2">Неделя</button>
+                <button id="btn-filter-month" type="button" class="btn btn-outline-dark me-2">Месяц</button>
+                <button id="btn-filter-year" type="button" class="btn btn-outline-dark me-2">Год</button>
+                <button id="btn-filter-all" type="button" class="btn btn-outline-dark me-2">Все</button>
+                <button id="btn-filter-interval" type="button" class="btn btn-outline-dark">Интервал</button>
+            </div>
+            <div class="main-change-date d-flex align-items-center ms-3">
+                <form class="pa__top-sec">
+                    <div class="pa__middle-range">
+                        <span class="me-3">с</span>
+                        <div class="pa__middle-item">
+                            <input id="startDate" class="pa__middle-input text" type="date" name="date"
+                                placeholder="Дата" required>
+                        </div>
+                        <span class="me-3">по</span>
+                        <div class="pa__middle-item">
+                            <input id="endDate" class="pa__middle-input text" type="date" name="date" placeholder="Дата"
+                                required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12 col-md-6">
+                <div class="text-center text-danger" id="no-income"></div>
+                <canvas id="myPieChartIncome"></canvas>
+            </div>
+            <div class="col-12 divider p-0"></div>
+            <div class="col-12 col-md-6">
+                <div class="text-center text-danger" id="no-costs"></div>
+                <canvas id="myPieChartCosts"></canvas>
+            </div>
+        </div>
+
+    </div>
+</div>
