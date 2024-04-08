@@ -1,7 +1,7 @@
-import config from "../../config/config.js";
-import { InputValidation } from "../../config/inputValid.js";
-import { UrlManager } from "../utils/url-manager.js";
-import { CustomHttp } from "./services/custom-http.js";
+import config from "../config/config";
+import { InputValidation } from "../config/inputValid";
+import { UrlManager } from "../utils/url-manager";
+import { CustomHttp } from "./services/custom-http";
 
 
 

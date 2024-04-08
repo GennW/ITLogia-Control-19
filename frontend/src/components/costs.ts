@@ -1,7 +1,7 @@
-import { DomCreateCard } from "../../config/DOMCreate.js";
-import config from "../../config/config.js";
-import { UrlManager } from "../utils/url-manager.js";
-import { CustomHttp } from "./services/custom-http.js";
+import { DomCreateCard } from "../config/DOMCreate";
+import config from "../config/config";
+import { UrlManager } from "../utils/url-manager";
+import { CustomHttp } from "./services/custom-http";
 
 
 

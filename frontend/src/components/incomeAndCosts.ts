@@ -1,9 +1,9 @@
-import config from "../../config/config.js";
-// import { GetBalance } from "../../config/getBalance.js";
-import icons from "../../config/icons.js";
-import { UrlManager } from "../utils/url-manager.js";
-import { FilterDate } from "./filterDate.js";
-import { CustomHttp } from "./services/custom-http.js";
+import config from "../config/config";
+// import { GetBalance } from "../../config/getBalance";
+import icons from "../config/icons";
+import { UrlManager } from "../utils/url-manager";
+import { FilterDate } from "./filterDate";
+import { CustomHttp } from "./services/custom-http";
 
 
 

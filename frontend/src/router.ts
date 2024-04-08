@@ -1,24 +1,36 @@
-import { Form } from "./components/form.js";
-import { Diagram } from "./components/diagramm.js";
-import { Costs } from "./components/costs.JS";
-import { Income } from "./components/income.JS";
-import { CostsCreate } from "./components/costsCreate.JS";
-import { CostsEdit } from "./components/costsEdit.JS";
-import { IncomeAndCosts } from "./components/incomeAndCosts.JS";
-import { IncomeCostsCreate } from "./components/incomeCostsCreate.JS";
-import { IncomeCostsEdit } from "./components/incomeCostsEdit.JS";
-import { IncomeCreate } from "./components/incomeCreate.JS";
-import { IncomeEdit } from "./components/incomeEdit.JS";
-import { Auth } from "./components/services/auth.js";
-import { Logout } from "./components/services/logout.js";
-import { HandleElementsSidebar } from "./components/services/handleElemensSidebar.js";
-import { Sidebar } from "./components/sidebar.js";
+import { Form } from "./components/form";
+import { Diagram } from "./components/diagramm";
+import { Costs } from "./components/costs";
+import { Income } from "./components/income";
+import { CostsCreate } from "./components/costsCreate";
+import { CostsEdit } from "./components/costsEdit";
+import { IncomeAndCosts } from "./components/incomeAndCosts";
+import { IncomeCostsCreate } from "./components/incomeCostsCreate";
+import { IncomeCostsEdit } from "./components/incomeCostsEdit";
+import { IncomeCreate } from "./components/incomeCreate";
+import { IncomeEdit } from "./components/incomeEdit";
+import { Auth } from "./components/services/auth";
+import { Logout } from "./components/services/logout";
+import { HandleElementsSidebar } from "./components/services/handleElemensSidebar";
+import { Sidebar } from "./components/sidebar";
+import { RouteType } from "./types/roure.type";
+import { UserInfoType } from "./types/user-info.type";
 
 export class Router {
+    private contentElement: HTMLElement | null;
+    private stylesElement: HTMLLinkElement | null;
+    private additionalStyleElement: HTMLLinkElement | null;
+    private titleElement: HTMLElement | null;
+    private sidebarElement: HTMLElement | null;
+    private layoutElement: HTMLElement | null;
+
+    private routes: RouteType[];
+
+
     constructor() {
         this.contentElement = document.getElementById('content');
-        this.stylesElement = document.getElementById('styles');
-        this.additionalStyleElement = document.getElementById('additionalStyle');
+        this.stylesElement = <HTMLLinkElement>document.getElementById('styles');
+        this.additionalStyleElement = <HTMLLinkElement>document.getElementById('additionalStyle');
         this.titleElement = document.getElementById('title');
         this.sidebarElement = document.getElementById('sidebar');
         this.layoutElement = document.getElementById('layout');
@@ -34,13 +46,6 @@ export class Router {
                 isAuth: true,
                 load: () => { // для скриптов под каждую страницу
                     new Diagram();
-
-                    // const diagramIncome = new Diagram('Доходы');
-                    // diagramIncome.createChartWithCanvasIncome(); // Создает диаграмму с dataCanvas1
-
-                    // const diagramCosts = new Diagram('Расходы');
-                    // diagramCosts.createChartWithCanvasCosts(); // Создает диаграмму с dataCanvas2
-
                     new Logout();
                 }
             },
@@ -178,20 +183,21 @@ export class Router {
         ]
     }
 
-    async openRoute() {
+    public async openRoute(): Promise<void> {
         // выход из системы
-        const urlRout = window.location.hash.split('?')[0];
+        const urlRout: string = window.location.hash.split('?')[0];
         if (urlRout === '#/logout') {
-            Auth.logout();
-
-            window.location.href = '#/signin';
-            return;
+            const result: boolean = await Auth.logout();
+            if (result) {
+                window.location.href = '#/signin';
+                return;
+            } else {
+                console.log('Ошибка при выходе из системы')
+            }
         }
 
-
-        const newRoute = this.routes.find(item => {
+        const newRoute: RouteType | undefined = this.routes.find(item => {
             return item.route === urlRout;
-
         });
 
         if (!newRoute) {
@@ -205,30 +211,45 @@ export class Router {
             return;
         }
 
+        // if (!this.sidebarElement || !this.layoutElement 
+        //     || !this.contentElement || !this.stylesElement 
+        //     || !this.additionalStyleElement || !this.titleElement) {
+        //         if (urlRout === '#/') {
+        //             return;
+        //         } else {
+        //             window.location.href = '#/';
+        //         }
+        // }
         // добавляем на нужную страницу сайдбар
-        if (!newRoute.isAuth) {
-            this.sidebarElement.style = 'display: none !important';
-            this.layoutElement.style = 'justify-content: center; padding: 0 20px'
-        } else {
-            this.sidebarElement.style = '';
-            this.layoutElement.style = '';
-            new HandleElementsSidebar();
-            new Sidebar();
+        if (this.sidebarElement && this.layoutElement) {
+            if (!newRoute.isAuth) {
+                this.sidebarElement.style.cssText = 'display: none !important';
+                this.layoutElement.style.cssText = 'justify-content: center; padding: 0 20px'
+            } else {
+                this.sidebarElement.style.cssText = '';
+                this.layoutElement.style.cssText = '';
+                new HandleElementsSidebar();
+                new Sidebar();
+            }
         }
 
+
         //24min + 1:41:50 Проект Quiz: часть 4
-        this.contentElement.innerHTML =
-            await fetch(newRoute.template)
-                .then(response => response.text());
+        if (this.contentElement) {
+            this.contentElement.innerHTML =
+                await fetch(newRoute.template)
+                    .then(response => response.text());
+        }
+
 
         // добавляем основные стили
-        if (newRoute.styles && newRoute.styles.length > 0) {
+        if (newRoute.styles && newRoute.styles.length > 0 && this.stylesElement) {
             this.stylesElement.setAttribute('href', newRoute.styles);
 
         }
 
         // добавляем дополнительные стили
-        if (newRoute.additionalStyle && newRoute.additionalStyle.length > 0) {
+        if (newRoute.additionalStyle && newRoute.additionalStyle.length > 0 && this.additionalStyleElement) {
             this.additionalStyleElement.setAttribute('href', newRoute.additionalStyle);
         }
         // Проверяем, существует ли элемент дополнительного стиля
@@ -241,14 +262,15 @@ export class Router {
                 this.additionalStyleElement.setAttribute('href', newRoute.additionalStyle);
             }
         }
-       
-        this.titleElement.innerText = newRoute.title;
+        if (this.titleElement) {
+            this.titleElement.innerText = newRoute.title;
+        }
 
         // обрабатываем данные пользователя  1:40:30 Проект Quiz: часть 4
 
-        const userInfo = Auth.getUserInfo();
-        const accessToken = localStorage.getItem(Auth.accessTokenKey);
-        const profileFullName = document.getElementById('profile-full-name');
+        const userInfo: UserInfoType | null = Auth.getUserInfo();
+        const accessToken: string | null = localStorage.getItem(Auth.accessTokenKey);
+        const profileFullName: HTMLElement | null = document.getElementById('profile-full-name');
 
         if (userInfo && accessToken && profileFullName) {
             profileFullName.innerText = `${userInfo.name} ${userInfo.lastName}`;

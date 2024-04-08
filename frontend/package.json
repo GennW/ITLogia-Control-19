@@ -1,15 +1,21 @@
 {
   "name": "frontend",
   "version": "1.0.0",
-  "description": "stage2",
+  "description": "stage3 to TS",
   "main": "index.js",
   "scripts": {
+    "build": "webpack",
     "start": "http-server -o"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "copy-webpack-plugin": "^12.0.2",
+    "http-server": "^14.1.1",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.4",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4"
   }
 }

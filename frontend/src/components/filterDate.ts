@@ -1,5 +1,5 @@
-import config from "../../config/config.js";
-import { CustomHttp } from "./services/custom-http.js";
+import config from "../config/config";
+import { CustomHttp } from "./services/custom-http";
 
 
 export class FilterDate {

@@ -1,5 +1,5 @@
-import { CustomHttp } from "./services/custom-http.js";
-import config from "../../config/config.js";
+import { CustomHttp } from "./services/custom-http";
+import config from "../config/config";
 
 export class Sidebar {
 

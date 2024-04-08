@@ -1,6 +1,8 @@
-import { Router } from "./router.js";
+import { Router } from "./router";
 
 class App {
+    private router: Router
+
     constructor() {
         this.router = new Router();
         window.addEventListener('DOMContentLoaded', () => {

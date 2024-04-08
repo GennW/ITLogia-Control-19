@@ -1,4 +1,4 @@
-﻿import { FilterDate } from "./filterDate.js";
+﻿import { FilterDate } from "./filterDate";
 
 
 

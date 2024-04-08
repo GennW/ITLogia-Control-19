@@ -1,7 +1,7 @@
-import config from "../../config/config.js";
-import { UrlManager } from "../utils/url-manager.js";
-import { incomeCostsForm } from "./incomeCostsForm.js";
-import { CustomHttp } from "./services/custom-http.js";
+import config from "../config/config";
+import { UrlManager } from "../utils/url-manager";
+import { incomeCostsForm } from "./incomeCostsForm";
+import { CustomHttp } from "./services/custom-http";
 
 
 

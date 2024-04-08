@@ -1,14 +1,17 @@
-import config from "../../../config/config.js";
+import config from "../../config/config";
+import { LogoutResponseType } from "../../types/server/logout-response-type";
+import { RefreshResponseType } from "../../types/server/refresh-response.type";
+import { UserInfoType } from "../../types/user-info.type";
 
 export class Auth {
-    static accessTokenKey = 'tokens.accessToken';
-    static refreshTokenKey = 'tokens.refreshToken';
-    static UserInfoKey = 'userInfo';
+    public static accessTokenKey = 'tokens.accessToken';
+    private static refreshTokenKey = 'tokens.refreshToken';
+    private static UserInfoKey = 'userInfo';
 
-    static async processUnautorizedResponse() {     // 1:12:30 Проект Quiz: часть 4
-        const refreshToken = localStorage.getItem(this.refreshTokenKey);
+    public static async processUnautorizedResponse(): Promise<boolean> {     // 1:12:30 Проект Quiz: часть 4
+        const refreshToken: string | null = localStorage.getItem(this.refreshTokenKey);
         if (refreshToken) {
-            const response = await fetch(config.host + '/refresh', {
+            const response: Response = await fetch(config.host + '/refresh', {
                 method: 'POST',
                 headers: {
                     'Content-type': 'application/json',
@@ -19,8 +22,8 @@ export class Auth {
 
             // проверяем ответ от сервера
             if (response && response.status === 200) { // 1:17  Проект Quiz: часть 4
-                const result = await response.json(); // берем ответ от сервера
-                if (result && !result.error) { // если нет ошибки
+                const result: RefreshResponseType | null = await response.json(); // берем ответ от сервера
+                if (result && !result.error && result.tokens) { // если нет ошибки
                     this.setTokens(result.tokens.accessToken, result.tokens.refreshToken); // устанавливаем новые токены
                     return true; // если все успешно обновилось то возвращаем true в custom-http в if(result)
                 }
@@ -36,12 +39,12 @@ export class Auth {
     }
 
 
-    static setTokens(accessToken, refreshToken) {
+    public static setTokens(accessToken: string, refreshToken: string): void {
         localStorage.setItem(this.accessTokenKey, accessToken);
         localStorage.setItem(this.refreshTokenKey, refreshToken);
     }
 
-    static removeTokens() {
+    private static removeTokens(): void {
         localStorage.removeItem(this.accessTokenKey);
         localStorage.removeItem(this.refreshTokenKey);
     }
@@ -54,14 +57,14 @@ export class Auth {
     }
 
     // устанавливаем информацию пользователя 
-    static setUserInfo(info) {
+    public static setUserInfo(info: UserInfoType): void {
         // в localStorage храняться только строки поэтому при размещении объекта JSON.stringify
         localStorage.setItem(this.UserInfoKey, JSON.stringify(info));
     }
 
     // получаем информацию пользователя 
-    static getUserInfo() {
-        const userInfo = localStorage.getItem(this.UserInfoKey);
+    public static getUserInfo(): UserInfoType | null {
+        const userInfo: string | null = localStorage.getItem(this.UserInfoKey);
         if (userInfo) {
             return JSON.parse(userInfo);
         }
@@ -69,11 +72,11 @@ export class Auth {
         return null;
     }
 
-    static async logout() {
+    public static async logout(): Promise<boolean> {
         // запрос на серврдля удаления токенов при разлогировании        
-        const refreshToken = localStorage.getItem(this.refreshTokenKey);
+        const refreshToken: string | null = localStorage.getItem(this.refreshTokenKey);
         if (refreshToken) {
-            const response = await fetch(config.host + '/logout', {
+            const response: Response = await fetch(config.host + '/logout', {
                 method: 'POST',
                 headers: {
                     'Content-type': 'application/json',
@@ -84,13 +87,14 @@ export class Auth {
 
             // проверяем ответ от сервера
             if (response && response.status === 200) { // 1:17  Проект Quiz: часть 4
-                const result = await response.json(); // берем ответ от сервера
+                const result: LogoutResponseType | null= await response.json(); // берем ответ от сервера
                 if (result && !result.error) { // если нет ошибки
                     Auth.removeTokens();
-                    localStorage.removeItem(Auth.UserInfoKey);
+                    localStorage.removeItem(this.UserInfoKey);
                     return true;
                 }
             }
         }
+        return false
     }
 }
