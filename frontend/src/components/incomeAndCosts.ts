@@ -1,6 +1,7 @@
 import config from "../config/config";
 // import { GetBalance } from "../../config/getBalance";
 import icons from "../config/icons";
+import { QueryParamsType } from "../types/query-params-type";
 import { UrlManager } from "../utils/url-manager";
 import { FilterDate } from "./filterDate";
 import { CustomHttp } from "./services/custom-http";
@@ -8,6 +9,8 @@ import { CustomHttp } from "./services/custom-http";
 
 
 export class IncomeAndCosts extends FilterDate {
+    routeParams: QueryParamsType;
+    
     constructor() {
         super();
         this.routeParams = UrlManager.getQueryParams();

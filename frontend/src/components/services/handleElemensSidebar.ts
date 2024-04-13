@@ -1,7 +1,11 @@
 export class HandleElementsSidebar {
+    previousActiveElement: HTMLElement | null
+    sidebarElements: Array<{ element: HTMLElement | null, isActive: boolean }>;
+
     constructor() {
         // Инициализация предыдущего активного элемента
         this.previousActiveElement = null;
+
         // Массив объектов для хранения данных о элементах
         this.sidebarElements = [
             { element: document.getElementById('main-sidebar'), isActive: true },
@@ -12,25 +16,31 @@ export class HandleElementsSidebar {
 
         // Добавление обработчика кликов для каждого элемента
         this.sidebarElements.forEach((sidebarItem) => {
-            sidebarItem.element.addEventListener('click', this.handleElementClick.bind(this, sidebarItem));
+            if (sidebarItem.element) {
+                sidebarItem.element.addEventListener('click', this.handleElementClick.bind(this, sidebarItem));
+
+            }
         });
     }
 
     // Обработчик кликов
-    handleElementClick(clickedItem, event) {
-        const clickedElement = event.target;
+    private handleElementClick(clickedItem: { element: HTMLElement | null, isActive: boolean }, event: Event): void {
+        const clickedElement = event.target as HTMLElement;
 
         // Обновление состояния всех элементов и предыдущего активного элемента
         this.sidebarElements.forEach((sidebarItem) => {
             if (sidebarItem !== clickedItem && sidebarItem.isActive) {
-                sidebarItem.element.classList.add('link-dark');
-                sidebarItem.element.classList.remove('active');
-                sidebarItem.isActive = false;
+                if (sidebarItem.element) {
+                    sidebarItem.element.classList.add('link-dark');
+                    sidebarItem.element.classList.remove('active');
+                    sidebarItem.isActive = false;
+                }
+
             }
         });
 
         // Обновление состояния кликнутого элемента
-        if (!clickedItem.isActive) {
+        if (!clickedItem.isActive && clickedItem.element) {
             clickedItem.element.classList.remove('link-dark');
             clickedItem.element.classList.add('active');
             clickedItem.isActive = true;
@@ -43,15 +53,16 @@ export class HandleElementsSidebar {
     }
 
     // Обработчик клика по логотипу
-    handleLogoClick() {
-        this.handleElementClick({ element: this.sidebarElements[0].element, isActive: true });
+    private handleLogoClick(event: Event): void {
+        const firstSidebarElement = this.sidebarElements[0]; // Получить первый элемент
+        this.handleElementClick({ element: firstSidebarElement.element, isActive: true }, event);
     }
 
     // Метод для сворачивания боковой панели
-    toggleSidebarCollapsed() {
+    private toggleSidebarCollapsed(): void {
         const currentURL = location.hash;
-        const categorySidebar = document.getElementById('category-sidebar');
-        if (currentURL !== '#/income' && currentURL !== '#/costs') {
+        const categorySidebar: HTMLElement | null = document.getElementById('category-sidebar');
+        if (currentURL !== '#/income' && currentURL !== '#/costs' && categorySidebar) {
             categorySidebar.classList.add('collapsed');
             categorySidebar.classList.add('active');
             categorySidebar.setAttribute('aria-expanded', 'false');

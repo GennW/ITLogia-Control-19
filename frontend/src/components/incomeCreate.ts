@@ -1,24 +1,40 @@
 import config from "../config/config";
 import { InputValidation } from "../config/inputValid";
+import { QueryParamsType } from "../types/query-params-type";
 import { UrlManager } from "../utils/url-manager";
 import { CustomHttp } from "./services/custom-http";
 
 
 export class IncomeCreate {
+    routeParams: QueryParamsType;
+    newCategoryNameElement: HTMLElement | null;
+    newCategoryNameElement: HTMLElement | null;
+    createNewCategoryElement: HTMLElement | null;
+    clearNewCategoryElement: HTMLElement | null;
+    category: [];
+
+
     constructor() {
         this.routeParams = UrlManager.getQueryParams();
         this.newCategoryNameElement = document.getElementById('new-cost-category-name');
-        this.category = [];
         this.newCategoryNameElement = document.getElementById('new-income-category-name');
+
+        this.category = [];
 
         this.createNewCategoryElement = document.getElementById('create-new-category');
         this.clearNewCategoryElement = document.getElementById('clear-new-category'); // Находим элемент для очистки
-        this.createNewCategoryElement.addEventListener('click', this.createCategory.bind(this));
-        this.clearNewCategoryElement.addEventListener('click', this.clearCategory.bind(this)); // Добавляем обработчик для очистки
+
+        if (this.createNewCategoryElement) {
+            this.createNewCategoryElement.addEventListener('click', this.createCategory.bind(this));
+        }
+        if (this.clearNewCategoryElement) {
+            this.clearNewCategoryElement.addEventListener('click', this.clearCategory.bind(this)); // Добавляем обработчик для очистки
+        }
+
         this.createCategory();
     }
 
-    async createCategory() {
+    private async createCategory(): Promise<void> {
         // Получаем значение нового имени категории из элемента формы
         let newCategoryName = this.newCategoryNameElement.value;
 
@@ -56,9 +72,12 @@ export class IncomeCreate {
         }
     }
 
-    clearCategory() {
-        this.newCategoryNameElement.value = ''; // Очищаем значение поля
-        location.href = '#/income';
+    private clearCategory(): void {
+        if (this.newCategoryNameElement) {
+            this.newCategoryNameElement.value = ''; // Очищаем значение поля
+            location.href = '#/income';
+        }
+
     }
 
 }

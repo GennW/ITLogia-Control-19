@@ -1,8 +1,8 @@
 export class DomCreateCard {
     
     // Создание DOM-элемента с указанным тегом, классами, текстом и атрибутами
-    createElement(tag, classList, text, attributes) {
-        const element = document.createElement(tag);
+   public createElement(tag: string, classList: string, text: string, attributes: string) {
+        const element: HTMLElement = document.createElement(tag);
 
         /*
         Если передан массив, перебираем его и для 

@@ -3,8 +3,11 @@ import { Auth } from "./services/auth";
 import { CustomHttp } from "./services/custom-http";
 
 export class Form {
+    
+page: string;
 
-    constructor(page) {
+    constructor(page: string) {
+        
 
         this.rememberMeElement = null;
         this.processElement = null;

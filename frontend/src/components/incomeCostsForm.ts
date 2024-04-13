@@ -1,8 +1,13 @@
 import config from "../config/config";
+import { QueryParamsType } from "../types/query-params-type";
 import { UrlManager } from "../utils/url-manager";
 import { CustomHttp } from "./services/custom-http";
 
 export class incomeCostsForm {
+    routeParams: QueryParamsType;
+
+
+
     constructor() {
         this.routeParams = UrlManager.getQueryParams();
         this.editOperation = localStorage.getItem('operationData');
@@ -20,11 +25,16 @@ export class incomeCostsForm {
 
     }
 
-    showHideTitleElements(incomeVisible, costVisible) {
-        const titlePageIncome = document.getElementById('title-income');
-        const titlePageCost = document.getElementById('title-cost');
-        titlePageIncome.style.display = incomeVisible ? 'inline' : 'none';
+    public showHideTitleElements(incomeVisible: boolean, costVisible: boolean): void {
+        const titlePageIncome: HTMLElement | null = document.getElementById('title-income');
+        const titlePageCost: HTMLElement | null = document.getElementById('title-cost');
+        if (titlePageCost) {
         titlePageCost.style.display = costVisible ? 'inline' : 'none';
+        }
+        if (titlePageIncome)  {
+            titlePageIncome.style.display = incomeVisible ? 'inline' : 'none'; 
+        }
+
     }
 
 

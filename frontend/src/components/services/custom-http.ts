@@ -1,11 +1,11 @@
 import { Auth } from "./auth";
 
 export class CustomHttp {
-    static async request(url, method = "GET", body = null) {
+    public static async request(url: string, method: string = "GET", body: any = null): Promise<any> {
 
 
         // Создаем объект params с методом запроса и заголовками
-        const params = {
+        const params: any = {
             method: method,
             headers: {
                 'Content-type': 'application/json',
@@ -13,8 +13,7 @@ export class CustomHttp {
             }
         };
         // Получаем токен доступа из локального хранилища
-        let token = localStorage.getItem(Auth.accessTokenKey);
-        // console.log('tokens =', token);
+        let token: string | null = localStorage.getItem(Auth.accessTokenKey);
         if (token) {
             params.headers['x-auth-token'] = token; //присваивание добавляем токен в заголовки запроса под ключем 'x-auth-token'.
         }
@@ -23,10 +22,9 @@ export class CustomHttp {
             params.body = JSON.stringify(body);
         }
         // Отправка запроса на сервер для регистрации
-        const response = await fetch(url, params);
+        const response: Response = await fetch(url, params);
 
-        // Обработка результата запроса
-        // const result = await response.json();
+        
         // проверяем статус сервера
         if (response.status < 200 || response.status >= 300) { // 43 и 48 min Проект Quiz: часть 4
             if (response.status === 401) { // 1:11:40 Проект Quiz: часть 4
@@ -34,7 +32,7 @@ export class CustomHttp {
                 if (result.error && result.message === "Invalid email or password") {
                     throw new Error("Неверный email или пароль");
                 } else {
-                    const result = await Auth.processUnautorizedResponse();
+                    const result: boolean = await Auth.processUnautorizedResponse();
 
                     if (result) { // 1:18:50 если в auth.js приходит false
                         return await this.request(url, method, body); // рекурсия 1:20 Проект Quiz: часть 4
@@ -44,7 +42,7 @@ export class CustomHttp {
                 }
             }
             alert('Что-то пошло не так');
-            throw new Error(response.message);
+            throw new Error(response.statusText);
         }
         // console.log(response)
         return await response.json();

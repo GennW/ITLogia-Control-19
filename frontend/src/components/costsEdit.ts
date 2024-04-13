@@ -1,10 +1,13 @@
 import config from "../config/config";
 import { InputValidation } from "../config/inputValid";
+import { QueryParamsType } from "../types/query-params-type";
 import { UrlManager } from "../utils/url-manager";
 import { CustomHttp } from "./services/custom-http";
 
 
 export class CostsEdit {
+    routeParams: QueryParamsType;
+
     constructor() {
         this.routeParams = UrlManager.getQueryParams();
         this.cancelModifiedCostsCategory();

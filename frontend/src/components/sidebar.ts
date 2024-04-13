@@ -8,9 +8,9 @@ export class Sidebar {
         this.addEventListeners();
     }
 
-    async init() {
+    private async init(): Promise<void> {
         this.toggleSidebar();
-        const balanceElement = document.getElementById('common-balance');
+        const balanceElement: HTMLElement | null = document.getElementById('common-balance');
 
         try {
             // Выполняем запрос на получение баланса
@@ -20,8 +20,10 @@ export class Sidebar {
                 if (getBalance.error) {
                     console.error('Ошибка при получении баланса:', getBalance.error);
                 } else {
-                    const formattedBalance = getBalance.balance.toLocaleString();  // Применение форматирования разделителя разрядов
-                    balanceElement.innerText = formattedBalance + '$';
+                    if (balanceElement) {
+                        const formattedBalance: string = getBalance.balance.toLocaleString();  // Применение форматирования разделителя разрядов
+                        balanceElement.innerText = formattedBalance + '$';
+                    }
                 }
             }
         } catch (error) {
@@ -29,30 +31,27 @@ export class Sidebar {
         }
     }
 
-    addEventListeners() {
+    private addEventListeners(): void {
 
-        const burgerIcon = document.querySelector('.burger-icon');
-        const sidebar = document.querySelector('.sidebar');
-    
+        const burgerIcon: HTMLElement | null = document.querySelector('.burger-icon');
+        const sidebar: HTMLElement | null = document.querySelector('.sidebar');
+
         if (burgerIcon) {
+            if (sidebar) {
+                burgerIcon.addEventListener('click', function (event) {
+                    if (!sidebar.contains(event.target) && event.target.tagName !== 'A') {
+                        sidebar.classList.toggle('active'); // Переключает класс "active" для открытия/закрытия сайдбара
 
-            burgerIcon.addEventListener('click', function (event) {
-                if (!sidebar.contains(event.target) && event.target.tagName !== 'A') {
-                    sidebar.classList.toggle('active'); // Переключает класс "active" для открытия/закрытия сайдбара
-
-                }
-            });
-    
-
+                    }
+                });
+            }
         }
-    
+
         window.addEventListener('resize', this.toggleSidebar);
-    
-       
     }
 
-    toggleSidebar() {
-        let width = window.innerWidth;
+    private toggleSidebar(): void {
+        let width: number = window.innerWidth;
         let burger = document.querySelector('.burger');
         let btnClose = document.querySelector('.btn-close');
         let sidebar = document.querySelector('.sidebar-wrapper');

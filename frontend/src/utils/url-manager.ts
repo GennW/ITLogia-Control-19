@@ -1,32 +1,20 @@
-//41:30 Quiz 3
+import { QueryParamsType } from "../types/query-params-type";
 
 export class UrlManager {
-    // делаем методы класса статическими, чтобы не создавать экземпляры этого класса
-    static getQueryParams() {
-        const qs = document.location.hash.split('+').join(' ');
+    public static getQueryParams(): QueryParamsType {
+        const qs: string = document.location.hash.split('+').join(' ');
 
-        let params = {};
-        let tokens;
-        let re = /[?&]([^=]+)=([^&]*)/g;
+        let params: QueryParamsType = {};
+        let tokens: RegExpExecArray | null;
+        let re: RegExp = /[?&]([^=]+)=([^&]*)/g;
 
 
-        //выполняется до тех пор, пока регулярное выражение re находит совпадения в строке qs. 
-        //На каждой итерации цикла декодируются и добавляются параметры (название и значение) в объект params.
         while (tokens = re.exec(qs)) {
             params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
         }
-        //функция возвращает объект params, содержащий все параметры из строки запроса в виде пар "ключ: значение".
         return params;
     }
 
-
-    static checkUserData(params) {
-        if (!params.name || !params.lastName || !params.email) {
-            // location.href = '#/signin';
-            window.location.hash = '#/signin'
-            // console.log('Сработала проверка на переход по страницам без регистрации')
-        }
-    }
 }
 
 // 41 минута видео

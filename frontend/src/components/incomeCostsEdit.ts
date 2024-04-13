@@ -1,4 +1,5 @@
 import config from "../config/config";
+import { QueryParamsType } from "../types/query-params-type";
 import { UrlManager } from "../utils/url-manager";
 import { incomeCostsForm } from "./incomeCostsForm";
 import { CustomHttp } from "./services/custom-http";
@@ -6,6 +7,8 @@ import { CustomHttp } from "./services/custom-http";
 
 
 export class IncomeCostsEdit extends incomeCostsForm {
+    routeParams: QueryParamsType;
+    
     constructor() {
         super();
         this.routeParams = UrlManager.getQueryParams();
