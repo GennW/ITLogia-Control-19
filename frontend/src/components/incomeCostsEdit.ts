@@ -8,58 +8,33 @@ import { CustomHttp } from "./services/custom-http";
 
 export class IncomeCostsEdit extends incomeCostsForm {
     routeParams: QueryParamsType;
-    
+
     constructor() {
         super();
         this.routeParams = UrlManager.getQueryParams();
-
+        this.handleOperationCreationClick();
 
         // меняем заголовок "Редактирование дохода(расхода)"
-        if (this.operation.type === 'expense') {
-            this.showHideTitleElements(false, true);
-        } else {
-            this.showHideTitleElements(true, false);
-
+        if (this.operation.length > 0) {
+            if (this.operation[0].type === 'expense') {
+                this.showHideTitleElements(false, true);
+            } else {
+                this.showHideTitleElements(true, false);
+            }
         }
-
-
-        this.handleOperationCreationClick();
     }
 
 
-    fillFormFieldsFromOperation() {
-        const typeSelect = document.getElementById('type');
-        const amountInput = document.getElementById('summ');
-        // console.log(this.operation)
-        const dateInput = document.getElementById('date-input');
-        const commentInput = document.getElementById('comment');
-        const selectElement = document.getElementById('select');
+    private handleOperationCreationClick(): void {
 
-        // Устанавливаем значение суммы
-        amountInput.value = this.operation.amount;
-
-        // Устанавливаем значение даты
-        dateInput.value = this.operation.date;
-
-        // Устанавливаем значение комментария
-        commentInput.value = this.operation.comment;
-
-        // Устанавливаем значение категории
-        selectElement.value = this.operation.category;
-    }
-
-    handleOperationCreationClick() {
-        
-        document.getElementById('btn-create-operation').addEventListener('click', () => {
-            const selectedCategory = document.getElementById('select');
-            const typeSelect = document.getElementById('type');
-            this.amountInput = document.getElementById('summ').value;
-            this.dateInput = document.querySelector('input[type="date"]').value;
-            this.commentInput = document.getElementById('comment').value;
+        document.getElementById('btn-create-operation')?.addEventListener('click', () => {
+            const selectedCategory: HTMLSelectElement | null = document.getElementById('select') as HTMLSelectElement;
+            const typeSelect: HTMLSelectElement | null = document.getElementById('type') as HTMLSelectElement;
+            this.amountInput = (document.getElementById('summ') as HTMLInputElement).value;
+            this.dateInput = (document.querySelector('input[type="date"]') as HTMLInputElement).value;
+            this.commentInput = (document.getElementById('comment') as HTMLInputElement).value;
             this.selectedOptionId = Number(selectedCategory.options[selectedCategory.selectedIndex].id);
-            this.selectedType = typeSelect.options[typeSelect.selectedIndex].value === 'Доход' ? 'income' : 'expense';
-            // this.formattedDate = this.formatDate(this.dateInput);
-            
+            this.selectedType = typeSelect?.options[typeSelect.selectedIndex].value === 'Доход' ? 'income' : 'expense';
 
             if (!this.selectedOptionId || this.amountInput === '' || this.dateInput === '' || this.commentInput === '') {
                 alert('Пожалуйста, заполните все поля.');
@@ -70,17 +45,17 @@ export class IncomeCostsEdit extends incomeCostsForm {
         });
     }
 
-    async createOperation(selectedType, selectedOptionId, amountInput, dateInput, commentInput) {
-        
+    private async createOperation(selectedType: string, selectedOptionId: number, amountInput: string, dateInput: string, commentInput: string): Promise<void> {
+
         try {
-            const createOperation = await CustomHttp.request(config.host + '/operations/' + this.operation.id, 'PUT', {
+            const createOperation = await CustomHttp.request(config.host + '/operations/' + this.operation[0].id, 'PUT', {
                 type: selectedType,
                 amount: amountInput,
                 date: dateInput,
                 comment: commentInput,
                 category_id: selectedOptionId
             });
-            
+
             if (createOperation && createOperation.error) {
                 if (createOperation.message === "This record already exists") {
                     console.error("Ошибка: Запись уже существует");

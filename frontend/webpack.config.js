@@ -1,7 +1,10 @@
 const path = require('path');
 const CopyPlugin = require("copy-webpack-plugin");
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
+  mode: 'development',
+  devtool: 'inline-source-map',
   entry: './src/app.ts',
   module: {
     rules: [
@@ -20,6 +23,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
   },
   plugins: [
+    new CleanWebpackPlugin(),
     new CopyPlugin({
       patterns: [
         { from: "./index.html" },

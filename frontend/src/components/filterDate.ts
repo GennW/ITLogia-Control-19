@@ -1,8 +1,13 @@
 import config from "../config/config";
+import { BtnType, PeriodHandlersType } from "../types/filterDateType";
+import { IncomeAndCostOperationsType } from "../types/server/operations-period-type";
 import { CustomHttp } from "./services/custom-http";
 
 
 export class FilterDate {
+    buttons: BtnType;
+    operations: IncomeAndCostOperationsType[] = [];
+
     constructor() {
         this.buttons = {
             FILTER_DAY: document.getElementById('btn-filter-day'),
@@ -17,34 +22,30 @@ export class FilterDate {
 
     }
 
-    init() {
-        // чтобы в массив попали  данные операции перед вызовом getCommonBalance()
-        this.getOperations('all')
-            .then(() => {
-                this.setDefaultActiveButton();
-                this.bntFilterOperations();
-                this.handleIntervalFilter();
-            })
-            .catch(error => {
-                console.error('Ошибка при загрузке операций:', error);
-            });
+    protected  async init(): Promise<void> {
+        await this.getOperations('all');
+        this.setDefaultActiveButton();
+        this.bntFilterOperations();
+        this.handleIntervalFilter();
     }
 
-    async getOperations(period) {
+    public async getOperations(period: string): Promise<void> {
         try {
-            const result = await CustomHttp.request(config.host + `/operations?period=${period}`);
-            if (result && !result.error) {
+            const result: IncomeAndCostOperationsType[] = await CustomHttp.request(config.host + `/operations?period=${period}`);
+            if (result) {
                 this.operations = result;
 
+            } else {
+                console.error('Получен пустой результат или ошибка на сервере');
             }
         } catch (error) {
             console.error('Ошибка:', error);
         }
     }
 
-    bntFilterOperations() {
+    private bntFilterOperations(): void {
         // объект для хранения соответствия между идентификаторами кнопок и периодами
-        const periodHandlers = {
+        const periodHandlers: PeriodHandlersType = {
             'FILTER_ALL': 'all',
             'FILTER_DAY': 'day',
             'FILTER_WEEK': 'week',
@@ -55,40 +56,45 @@ export class FilterDate {
 
         // обработчики событий клика кнопкам в соответствии с периодами
         for (const buttonId in periodHandlers) {
+            // buttonId является ключом объекта PeriodHandlersType
+            const typedButtonId = buttonId as keyof PeriodHandlersType;
+            // Получаем ссылку на элемент кнопки из объекта this.buttons, где buttonId является ключом объекта BtnType
+            const buttonElement = this.buttons[buttonId as keyof BtnType];
             // Добавляем обработчик события клика для каждой кнопки
-            this.buttons[buttonId].addEventListener('click', () => {
-                // Вызываем функцию для обновления классов кнопок в зависимости от выбранной кнопки
-                this.updateButtonClass(buttonId);
-                // Очищаем содержимое контейнера таблицы перед обновлением
-                // this.clearTableWithOperations();
-                // Получаем и отображаем операции в зависимости от выбранного периода
-                this.getOperations(periodHandlers[buttonId]);
-            });
+            if (buttonElement) {
+                buttonElement.addEventListener('click', () => {
+                    // Вызываем функцию для обновления классов кнопок в зависимости от выбранной кнопки
+                    this.updateButtonClass(typedButtonId);
+                    // Очищаем содержимое контейнера таблицы перед обновлением
+                    // this.clearTableWithOperations();
+                    // Получаем и отображаем операции в зависимости от выбранного периода
+                    this.getOperations(periodHandlers[typedButtonId]);
+                });
+            }
         }
-
     }
 
 
     // обработка выбора даты начала и конца интервала
-    handleIntervalFilter() {
+    private handleIntervalFilter(): void {
 
         // Получаем элементы для выбора дат "От" и "До" интервала
-        const dateFrom = document.getElementById('startDate');
-        const dateTo = document.getElementById('endDate');
-        const period = 'interval';  // Устанавливаем период для запроса
+        const dateFrom: HTMLInputElement | null = document.getElementById('startDate') as HTMLInputElement;
+        const dateTo: HTMLInputElement | null = document.getElementById('endDate') as HTMLInputElement;
+        const period: string = 'interval';  // Устанавливаем период для запроса
 
-        const handleIntervalChange = () => {
+        const handleIntervalChange: () => void = () => {
             this.getOperationsWithInterval(period, dateFrom.value, dateTo.value);
         };
 
         // обработчик при клике на даты без выбора фильтра интервал
-        const handleFilterIntervalClick = () => {
+        const handleFilterIntervalClick: () => void = () => {
             // Если выбраны обе даты, использовать выбранный интервал
             if (dateFrom.value !== '' && dateTo.value !== '') { // Проверяем, заполнены ли оба поля даты
                 this.updateButtonClass('FILTER_INTERVAL'); // Обновляем класс кнопки "Интервал" для отображения активного состояния
                 this.getOperationsWithInterval(period, dateFrom.value, dateTo.value); // Вызываем метод для получения операций с учетом выбранного интервала
             } else {
-                
+
                 console.log('Пожалуйста заполните оба поля дат.');
             }
         };
@@ -100,46 +106,75 @@ export class FilterDate {
         dateTo.addEventListener('change', handleFilterIntervalClick);
         dateFrom.addEventListener('change', handleFilterIntervalClick);
         // Добавляем обработчик события клика на кнопку "Интервал" при изменении значений дат
-        this.buttons.FILTER_INTERVAL.addEventListener('click', handleFilterIntervalClick);
+        if (this.buttons.FILTER_INTERVAL) {
+            this.buttons.FILTER_INTERVAL.addEventListener('click', handleFilterIntervalClick);
+        }
     }
 
-    async getOperationsWithInterval(period, dateFrom, dateTo) {
+    public async getOperationsWithInterval(period: string, dateFrom: string, dateTo: string) {
 
         try {
-            const result = await CustomHttp.request(config.host + `/operations?period=${period}&dateFrom=${dateFrom}&dateTo=${dateTo}`);
-            if (result && !result.error) {
+            const result: IncomeAndCostOperationsType[] = await CustomHttp.request(config.host + `/operations?period=${period}&dateFrom=${dateFrom}&dateTo=${dateTo}`);
+            if (result) {
                 this.operations = result;
-                // this.clearTableWithOperations();
-                // this.createTable();
+
+            } else {
+                console.error('Получен пустой результат или ошибка на сервере');
             }
         } catch (error) {
             console.error('Ошибка при получении операций за интервал:', error);
         }
     }
 
-    updateButtonClass(activeButton) {
-        // Удаляем класс "active" у всех кнопок
-        Object.values(this.buttons).forEach(button => {
-            button.classList.remove('active');
-        });
-        // Добавляем класс "active" только к выбранной кнопке
-        this.buttons[activeButton].classList.add('active');
+    // private updateButtonClass(activeButton: keyof BtnType): void {
+    //     if (this.buttons && this.buttons[activeButton]) {
+    //         Object.values(this.buttons).forEach((button: HTMLElement | null) => {
+    //             if (button) {
+    //                 button.classList.remove('active');
+    //             }
+    //         });
+    //         const targetButton: HTMLElement | null = this.buttons[activeButton];
+    //         if (targetButton) {
+    //             targetButton.classList.add('active');
+    //         }
+    //     } else {
+    //         console.log(`Кнопка с идентификатором ${activeButton} не найдена или объект this.buttons равен null.`);
+    //     }
+    // }
+
+    private updateButtonClass(activeButton: keyof BtnType): void {
+        const targetButton: HTMLElement | null = this.buttons[activeButton];
+        if (targetButton) {
+            Object.values(this.buttons).forEach(button => button?.classList.remove('active'));
+            targetButton.classList.add('active');
+        } else {
+            console.log(`Кнопка с идентификатором ${activeButton} не найдена или объект this.buttons равен null.`);
+        }
     }
 
+
     // Метод для установки кнопки "Все" по умолчанию
-    setDefaultActiveButton() {
-        const activeButton = this.getActiveButton();
-        if (!activeButton) {
+    private setDefaultActiveButton(): void {
+        const activeButton: HTMLElement | null= this.getActiveButton();
+        if (!activeButton && this.buttons.FILTER_ALL) {
             this.buttons.FILTER_ALL.classList.add('active');
         }
     }
 
-    getActiveButton() {
-        for (const buttonId in this.buttons) {
-            if (this.buttons[buttonId].classList.contains('active')) {
-                return this.buttons[buttonId]; // Возвращаем активную кнопку
-            }
-        }
-        return null; // Если нет активной кнопки, возвращаем null
+    // getActiveButton() {
+    //     // Используем Object.keys для явного получения ключей из this.buttons.
+    //     // Приводим тип ключей к keyof BtnType итерацией по массиву
+    //     for (const buttonId of Object.keys(this.buttons) as (keyof BtnType)[]) {
+    //         if (this.buttons[buttonId] && this.buttons[buttonId]!.classList.contains('active')) {
+    //             return this.buttons[buttonId]; // Возвращаем активную кнопку
+    //         }
+    //     }
+    //     return null; // Если нет активной кнопки, возвращаем null
+    // }
+
+    //метод возвращает первую найденную кнопку, удовлетворяющую условию (содержащую класс "active")
+    private getActiveButton(): HTMLElement | null {
+        return Object.values(this.buttons).find(button => button?.classList.contains('active')) || null;
     }
+    
 }

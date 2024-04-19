@@ -14,16 +14,16 @@ export class Sidebar {
 
         try {
             // Выполняем запрос на получение баланса
-            const getBalance = await CustomHttp.request(config.host + '/balance');
+            const getBalance: { balance: number } = await CustomHttp.request(config.host + '/balance');
 
             if (getBalance) {
-                if (getBalance.error) {
-                    console.error('Ошибка при получении баланса:', getBalance.error);
-                } else {
-                    if (balanceElement) {
-                        const formattedBalance: string = getBalance.balance.toLocaleString();  // Применение форматирования разделителя разрядов
-                        balanceElement.innerText = formattedBalance + '$';
-                    }
+
+                if (balanceElement) {
+                    const formattedBalance: string = getBalance.balance.toLocaleString();  // Применение форматирования разделителя разрядов
+                    balanceElement.innerText = formattedBalance + '$';
+                }
+                else {
+                    console.error('Ошибка при получении баланса');
                 }
             }
         } catch (error) {
@@ -36,15 +36,13 @@ export class Sidebar {
         const burgerIcon: HTMLElement | null = document.querySelector('.burger-icon');
         const sidebar: HTMLElement | null = document.querySelector('.sidebar');
 
-        if (burgerIcon) {
-            if (sidebar) {
-                burgerIcon.addEventListener('click', function (event) {
-                    if (!sidebar.contains(event.target) && event.target.tagName !== 'A') {
-                        sidebar.classList.toggle('active'); // Переключает класс "active" для открытия/закрытия сайдбара
-
-                    }
-                });
-            }
+        if (burgerIcon && sidebar) {
+            burgerIcon.addEventListener('click', (event) => {
+                const targetElement = event.target as Element;
+                if (!sidebar.contains(targetElement) && targetElement.tagName !== 'A') {
+                    sidebar.classList.toggle('active');
+                }
+            });
         }
 
         window.addEventListener('resize', this.toggleSidebar);
@@ -52,28 +50,32 @@ export class Sidebar {
 
     private toggleSidebar(): void {
         let width: number = window.innerWidth;
-        let burger = document.querySelector('.burger');
-        let btnClose = document.querySelector('.btn-close');
-        let sidebar = document.querySelector('.sidebar-wrapper');
+        let burger: HTMLElement | null = document.querySelector('.burger');
+        let btnClose: HTMLElement | null = document.querySelector('.btn-close');
+        let sidebar: HTMLElement | null = document.querySelector('.sidebar-wrapper');
 
         if (width >= 1024) {
-            sidebar.style.display = 'block';
-            sidebar.classList.remove('offcanvas', 'offcanvas-start');
-            sidebar.removeAttribute('data-bs-backdrop');
-            sidebar.removeAttribute('tabindex');
-            sidebar.removeAttribute('id');
-            sidebar.removeAttribute('aria-labelledby');
-            burger.style.display = 'none';
-            btnClose.style.display = 'none';
+            if (sidebar) {
+                sidebar.style.display = 'block';
+                sidebar.classList.remove('offcanvas', 'offcanvas-start');
+                sidebar.removeAttribute('data-bs-backdrop');
+                sidebar.removeAttribute('tabindex');
+                sidebar.removeAttribute('id');
+                sidebar.removeAttribute('aria-labelledby');
+            }
+            if (burger) burger.style.display = 'none';
+            if (btnClose) btnClose.style.display = 'none';
         } else if (width < 1024) {
-            sidebar.style.display = 'none';
-            burger.style.display = 'block';
-            btnClose.style.display = 'block';
-            sidebar.classList.add('offcanvas', 'offcanvas-start');
-            sidebar.setAttribute('data-bs-backdrop', 'static');
-            sidebar.setAttribute('tabindex', '-1');
-            sidebar.setAttribute('id', 'staticBackdrop');
-            sidebar.setAttribute('aria-labelledby', 'staticBackdropLabel');
+            if (sidebar && burger && btnClose) {
+                sidebar.style.display = 'none';
+                burger.style.display = 'block';
+                btnClose.style.display = 'block';
+                sidebar.classList.add('offcanvas', 'offcanvas-start');
+                sidebar.setAttribute('data-bs-backdrop', 'static');
+                sidebar.setAttribute('tabindex', '-1');
+                sidebar.setAttribute('id', 'staticBackdrop');
+                sidebar.setAttribute('aria-labelledby', 'staticBackdropLabel');
+            }
         }
     }
 }

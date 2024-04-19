@@ -1,49 +1,55 @@
 import config from "../config/config";
-// import { GetBalance } from "../../config/getBalance";
 import icons from "../config/icons";
 import { QueryParamsType } from "../types/query-params-type";
+import { RouteParamsType } from "../types/roure.type";
+import { IncomeAndCostOperationsType } from "../types/server/operations-period-type";
 import { UrlManager } from "../utils/url-manager";
 import { FilterDate } from "./filterDate";
 import { CustomHttp } from "./services/custom-http";
+import * as bootstrap from 'bootstrap';
 
 
 
 export class IncomeAndCosts extends FilterDate {
-    routeParams: QueryParamsType;
-    
+    routeParams: RouteParamsType[] | QueryParamsType;
+    operations: IncomeAndCostOperationsType[] = [];
+
     constructor() {
         super();
         this.routeParams = UrlManager.getQueryParams();
         this.init();
     }
 
-    async init() {
-        this.operations = [];
-
+    protected async init(): Promise<void> {
         super.init();
         this.btnCreateRedirectWithId();
         this.deleteOperationsWithUndefinedCategory();
     }
 
 
-    async getOperations(period) {
-        await super.getOperations(period);
-
-        this.deleteOperationsWithUndefinedCategory();
-        this.clearTableWithOperations()
-        this.createTable();
-
+    async getOperations(period: string): Promise<void> {
+        try {
+            await super.getOperations(period);
+            this.deleteOperationsWithUndefinedCategory();
+            this.clearTableWithOperations()
+            this.createTable();
+        } catch (error) {
+            console.error('Ошибка при получении операций с фильтром по периоду:', error);
+        }
     }
 
 
-    async getOperationsWithInterval(period, dateFrom, dateTo) {
-        await super.getOperationsWithInterval(period, dateFrom, dateTo);
-
-        this.clearTableWithOperations();
-        this.createTable();
+    public async getOperationsWithInterval(period: string, dateFrom: string, dateTo: string): Promise<void> {
+        try {
+            await super.getOperationsWithInterval(period, dateFrom, dateTo);
+            this.clearTableWithOperations();
+            this.createTable();
+        } catch (error) {
+            console.error('Ошибка при получении операций в определенном интервале времени:', error);
+        }
     }
 
-    createTable() {
+    private createTable(): void {
         const wrapperContent = document.getElementById('content-table'); // Получение контейнера для таблицы
         const table = document.createElement('table'); // Создание элемента таблицы
         table.classList.add('table', 'text-center', 'fs-6'); // Добавление классов к таблице
@@ -59,7 +65,7 @@ export class IncomeAndCosts extends FilterDate {
         }
     }
 
-    createTableHeader() {
+    private createTableHeader(): HTMLTableSectionElement {
         const thead = document.createElement('thead'); // Создание элемента заголовка таблицы
         const headerNames = ['№ операции', 'Тип', 'Категория', 'Сумма', 'Дата', 'Комментарий', '']; // Наименование столбцов
         const headerRow = this.createTableRow(headerNames, 'text-primary-emphasis'); // Создание строки заголовка таблицы
@@ -68,7 +74,7 @@ export class IncomeAndCosts extends FilterDate {
     }
 
 
-    createTableBody() {
+    private createTableBody(): HTMLTableSectionElement {
 
         const tbody = document.createElement('tbody'); // Создание элемента тела таблицы
         this.operations.forEach((data, index) => { // Перебор операций для создания строк таблицы
@@ -81,8 +87,11 @@ export class IncomeAndCosts extends FilterDate {
                 data.date,
                 data.comment
             ];
-            const row = this.createTableRow(cellData);
-            const iconCell = this.createIconCell(data.id);
+
+            const row = this.createTableRow(cellData.map(data => String(data)));
+            // const row = this.createTableRow(cellData);
+
+            const iconCell = this.createIconCell(data.id.toString());
             row.appendChild(iconCell);
             tbody.appendChild(row);
         });
@@ -90,17 +99,20 @@ export class IncomeAndCosts extends FilterDate {
         return tbody;
     }
 
-    createTableRow(data) {
-        const row = document.createElement('tr');
-        data.forEach(text => {
-            const cell = document.createElement('td');
+    private createTableRow(data: string[], cssClass?: string): HTMLTableRowElement {
+        const row: HTMLTableRowElement = document.createElement('tr');
+        data.forEach((text: string) => {
+            const cell: HTMLTableCellElement = document.createElement('td');
             cell.textContent = text;
             row.appendChild(cell);
         });
+        if (cssClass) {
+            row.classList.add(cssClass);
+        }
         return row;
     }
 
-    createIconCell(operationId) {
+    private createIconCell(operationId: string): HTMLTableCellElement {
         const iconCell = document.createElement('td');
         const icoWrapper = document.createElement('div');
         icoWrapper.classList.add('ico-wrapper', 'text-end');
@@ -118,7 +130,7 @@ export class IncomeAndCosts extends FilterDate {
     }
 
 
-    createIconLink(action, toggle, target, icon, operationId) {
+    private createIconLink(action: string, toggle: string, target: string, icon: string, operationId: string): HTMLAnchorElement {
         const link = document.createElement('a');
         link.classList.add('link-offset-2', 'link-', 'link-underline-opacity-0');
         link.href = 'javascript:void(0)';
@@ -135,18 +147,20 @@ export class IncomeAndCosts extends FilterDate {
         return link;
     }
 
-    async deleteOperation(operationId) {
+    private async deleteOperation(operationId: string): Promise<void> {
 
         try {
-            const result = await CustomHttp.request(config.host + '/operations/' + operationId, 'DELETE');
-            if (result && !result.error) {
-
-
+            const result: IncomeAndCostOperationsType[] = await CustomHttp.request(config.host + '/operations/' + operationId, 'DELETE');
+            if (result) {
+                let modalInstance: bootstrap.Modal | null = null;
 
                 // Удаление модального окна
-                const modal = document.getElementById('exampleModal')
-                const modalInstance = bootstrap.Modal.getOrCreateInstance(modal);
-                console.log(modalInstance)
+                const modal: HTMLElement | null = document.getElementById('exampleModal')
+                if (modal) {
+                    modalInstance = bootstrap.Modal.getOrCreateInstance(modal);
+                }
+
+                // console.log(modalInstance)
 
                 if (modalInstance) {
                     this.updateTable()
@@ -155,6 +169,8 @@ export class IncomeAndCosts extends FilterDate {
                     location.href = '#/incomeAndCosts';
                 }
 
+            } else {
+                console.error('Получен пустой результат или ошибка на сервере');
             }
         } catch (error) {
             console.error('Ошибка при удалении операции:', error);
@@ -162,28 +178,29 @@ export class IncomeAndCosts extends FilterDate {
     }
 
 
-
-    editDeleteLinkHandler(action, operationId) {
+    private editDeleteLinkHandler(action: string, operationId: string): void {
         this.populateModal(operationId);
-        const deleteOperationButton = document.getElementById('delete-operation');
-        if (action === 'Delete') {
+        const deleteOperationButton: HTMLElement | null = document.getElementById('delete-operation');
+        if (action === 'Delete' && deleteOperationButton) {
             deleteOperationButton.onclick = () => {
                 this.deleteOperation(operationId);
             };
 
         } else if (action === 'Edit') {
-            const operation = this.operations.find(op => op.id === operationId); // Находим операцию по идентификатору
-            const operationData = JSON.stringify(operation); // Преобразуем данные операции в JSON строку
+            const operation: IncomeAndCostOperationsType | undefined = this.operations.find(op => op.id.toString() === operationId); // Находим операцию по идентификатору
+            const operationData: string = JSON.stringify(operation); // Преобразуем данные операции в JSON строку
             // const encodedOperationData = encodeURIComponent(operationData); // Кодируем JSON строку для передачи через URL            
             localStorage.setItem('operationData', operationData); // Сохраняем данные операции в localStorage
-            location.href = `#/incomeCostsEdit?operationId=${operation.id}`; // Переходим на страницу редактирования с передачей operationId в URL
+            if (operation) {
+                location.href = `#/incomeCostsEdit?operationId=${operation.id}`; // Переходим на страницу редактирования с передачей operationId в URL
+            }
 
         }
     }
 
-    btnCreateRedirectWithId() {
-        const btnIncome = document.getElementById('create-income-btn');
-        const btnCost = document.getElementById('create-cost-btn');
+    private btnCreateRedirectWithId(): void {
+        const btnIncome: HTMLElement | null = document.getElementById('create-income-btn');
+        const btnCost: HTMLElement | null = document.getElementById('create-cost-btn');
 
         if (btnIncome) {
             btnIncome.addEventListener('click', function () {
@@ -199,29 +216,26 @@ export class IncomeAndCosts extends FilterDate {
         }
     }
 
-    populateModal(id) {
-        // const modalTitle = document.querySelector('.modal-title'); // Находим элемент с заголовком модального окна
+    private populateModal(id: string): void {
         const deleteOperationButton = document.getElementById('delete-operation'); // Находим кнопку "удалить" в модальном окне
-        // modalTitle.textContent = `Вы действительно хотите удалить категорию? Связанные доходы будут удалены навсегда.`;
-        deleteOperationButton.setAttribute('data-id', id); // Устанавливаем data-id для кнопки "удалить" в модальном окне, чтобы иметь доступ к идентификатору категории при подтверждении удаления
+        deleteOperationButton?.setAttribute('data-id', id); // Устанавливаем data-id для кнопки "удалить" в модальном окне, чтобы иметь доступ к идентификатору категории при подтверждении удаления
     }
 
     // удаление операций несущетвующих категрий из массива
-    deleteOperationsWithUndefinedCategory() {
+    private deleteOperationsWithUndefinedCategory(): void {
 
         // Создаем новый массив, в который добавляем только операции с существующими категориями
-        let newOperations = this.operations.filter(operation => operation.category !== undefined);
+        let newOperations: IncomeAndCostOperationsType[] = this.operations.filter(operation => operation.category !== undefined);
 
         // Переназначаем this.operations на новый массив без операций с несуществующими категориями
         this.operations = newOperations;
-
 
         // Пересоздаем таблицу с использованием обновленного массива
         this.clearTableWithOperations();
         this.createTable();
     }
 
-    async updateTable() {
+    private async updateTable(): Promise<void> {
         try {
             // Получить актуальные данные об операциях 
             await this.getOperations('all');
@@ -236,9 +250,12 @@ export class IncomeAndCosts extends FilterDate {
         }
     }
 
-    clearTableWithOperations() {
-        const wrapperContent = document.getElementById('content-table');
-        wrapperContent.innerHTML = '';  // Очищаем содержимое обертки перед добавлением новой таблицы
+    private clearTableWithOperations(): void {
+        const wrapperContent: HTMLElement | null = document.getElementById('content-table');
+
+        if (wrapperContent) {
+            wrapperContent.innerHTML = '';  // Очищаем содержимое обертки перед добавлением новой таблицы
+        }
     }
 
 }

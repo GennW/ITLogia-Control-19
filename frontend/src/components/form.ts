@@ -1,14 +1,17 @@
 import config from "../config/config";
+import { Field } from "../types/fields-type";
+import { AuthType } from "../types/server/auth.type";
 import { Auth } from "./services/auth";
 import { CustomHttp } from "./services/custom-http";
 
 export class Form {
-    
-page: string;
+
+    public page: string;
+    rememberMeElement: HTMLElement | null;
+    processElement: HTMLElement | null;
+    fields: Field[];
 
     constructor(page: string) {
-        
-
         this.rememberMeElement = null;
         this.processElement = null;
         this.page = page;
@@ -25,7 +28,6 @@ page: string;
                 password: 'password',
                 id: 'inputPassword',
                 element: null,
-                // regex: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$/,
                 regex: /^(?=.*\d)(?=.*[A-Z]).{10,}$/,
                 valid: false,
             },
@@ -60,8 +62,8 @@ page: string;
             item.element = document.getElementById(item.id);
 
             if (item.element) {
-                item.element.onchange = function () {
-                    that.validateField.call(that, item, this);
+                item.element.onchange = (event: Event) => {
+                    that.validateField.call(that, item, event.target as HTMLInputElement);
                 };
             }
 
@@ -69,89 +71,86 @@ page: string;
 
 
         this.processElement = document.getElementById('process');
-        this.processElement.onclick = function () {
-            that.processForm();
-        }
-        if (this.page === 'signin') {
-            this.rememberMeElement = document.getElementById('flexCheckDefault');
-            this.rememberMeElement.onchange = function () {
-                that.validateForm();
+        if (this.processElement) {
+            this.processElement.onclick = function () {
+                that.processForm();
             }
         }
 
+        if (this.page === 'signin') {
+            this.rememberMeElement = document.getElementById('flexCheckDefault');
+            if (this.rememberMeElement) {
+                this.rememberMeElement.onchange = function () {
+                    that.validateForm();
+                }
+            }
+        }
     }
 
 
-    validateField(field, element) {
+    private validateField(field: Field, element: HTMLInputElement): void {
         if (element) {
-            const parent = element.closest('.input-group');
-            const errorMessageId = 'error-message-' + field.id; // Генерируем уникальный ID для сообщения об ошибке
-            let errorMessage = document.getElementById(errorMessageId); // Проверяем существование элемента сообщения об ошибке
-            if (!errorMessage) {
+            const parent: HTMLElement | null = element.closest('.input-group');
+            const errorMessageId: string = 'error-message-' + field.id; // Генерируем уникальный ID для сообщения об ошибке
+            let errorMessage: HTMLElement | null = document.getElementById(errorMessageId); // Проверяем существование элемента сообщения об ошибке
+            if (!errorMessage && parent && parent.parentNode) {
                 errorMessage = document.createElement('span'); // Создаем элемент для сообщения об ошибке, если его нет
                 errorMessage.id = errorMessageId; // Устанавливаем уникальный ID
                 parent.parentNode.insertBefore(errorMessage, parent.nextSibling); // Вставляем сообщение после родительского блока
             }
             if (!element.value || !element.value.match(field.regex)) {
-                parent.style.border = '2px solid red'; // Устанавливаем стиль рамки
-                errorMessage.textContent = 'Некорректное значение'; // Выводим сообщение об ошибке
-                errorMessage.style.color = 'red'; // Выводим сообщение об ошибке
+                if (parent) {
+                    parent.style.border = '2px solid red'; // Устанавливаем стиль рамки
+                }
+                if (errorMessage) {
+                    errorMessage.textContent = 'Некорректное значение'; // Выводим сообщение об ошибке
+                    errorMessage.style.color = 'red'; // Выводим сообщение об ошибке 
+                }
+
                 field.valid = false;
+
             } else {
-                parent.removeAttribute('style'); // Удаляем стиль рамки
-                errorMessage.textContent = ''; // Очищаем сообщение об ошибке, если значение корректное
+                if (parent) {
+                    parent.removeAttribute('style'); // Удаляем стиль рамки
+                }
+                if (errorMessage) {
+                    errorMessage.textContent = ''; // Очищаем сообщение об ошибке, если значение корректное
+                }
+
                 field.valid = true;
             }
+
             this.validateForm();
         }
 
     }
 
-    // validateForm() {
-    //     const validForm = this.fields.every(item => item.valid);
-
-    //     // Проверка на существование полей "inputPassword" и "confirm-password"
-    //     const passwordField = this.fields.find(item => item.id === 'inputPassword');
-    //     const confirmPasswordField = this.fields.find(item => item.id === 'confirm-password');
-
-    //     // Получение значений пароля и подтверждения пароля
-    //     const passwordValue = passwordField ? passwordField.element.value : '';
-    //     const confirmPasswordValue = confirmPasswordField ? confirmPasswordField.element.value : '';
-
-    //     // rememberMeElement работает не верно
-    //     const isValid = this.rememberMeElement ? this.rememberMeElement.checked && validForm : validForm;
-    //     if (isValid && passwordValue === confirmPasswordValue) {
-    //         this.processElement.removeAttribute('disabled');
-    //     } else {
-    //         this.processElement.setAttribute('disabled', 'disabled');
-    //     }
-    //     return isValid;
-    // }
-
-    validateForm() {
+    private validateForm(): boolean {
         // Проверка всех полей на валидность
-        const validForm = this.fields.every(item => item.valid);
+        const validForm: boolean = this.fields.every(item => item.valid);
 
         // Поиск поля "inputPassword"
-        const passwordField = this.fields.find(item => item.id === 'inputPassword');
+        const passwordField: Field | undefined = this.fields.find(item => item.id === 'inputPassword');
         // Поиск поля "confirm-password"
-        const confirmPasswordField = this.fields.find(item => item.id === 'confirm-password');
+        const confirmPasswordField: Field | undefined = this.fields.find(item => item.id === 'confirm-password');
 
         // Получение значений пароля и подтверждения пароля
-        const passwordValue = passwordField ? passwordField.element.value : '';
-        const confirmPasswordValue = confirmPasswordField ? confirmPasswordField.element.value : '';
+        const passwordValue: string = passwordField && passwordField.element instanceof HTMLInputElement ? passwordField.element.value : '';
+        const confirmPasswordValue: string = confirmPasswordField && confirmPasswordField.element instanceof HTMLInputElement ? confirmPasswordField.element.value : '';
 
         // Проверка rememberMeElement, если он существует
-        const isRemembered = !this.rememberMeElement || this.rememberMeElement.checked;
+        const isRemembered = !this.rememberMeElement || (this.rememberMeElement instanceof HTMLInputElement && this.rememberMeElement.checked);
 
         // Проверка валидности формы, совпадения паролей и rememberMeElement
         const isValid = validForm && (!confirmPasswordField || passwordValue === confirmPasswordValue);
 
         // Если все условия верны, активировать кнопку
-        if (isValid) {
-            this.processElement.removeAttribute('disabled');
-        } else {
-            this.processElement.setAttribute('disabled', 'disabled');
+        if (this.processElement) {
+            if (isValid) {
+                this.processElement.removeAttribute('disabled');
+            } else {
+                this.processElement.setAttribute('disabled', 'disabled');
+            }
         }
 
         return isValid; // Возвращаем результат валидации формы
@@ -159,29 +158,48 @@ page: string;
 
 
 
-    async processForm() {
+    private async processForm(): Promise<void> {
         if (this.validateForm()) {
+            let email: string = '';
+            let password: string = '';
+            let fullName: string = '';
+            let passwordRepeat: string = '';
 
-            const email = this.fields.find(item => item.email === 'email').element.value;
-            const password = this.fields.find(item => item.password === 'password').element.value;
+            const emailField: Field | undefined = this.fields.find(item => item.email === 'email');
+
+            if (emailField && emailField.element instanceof HTMLInputElement) {
+                email = emailField.element.value;
+            }
+
+            const passwordField: Field | undefined = this.fields.find(item => item.email === 'password');
+            if (passwordField && passwordField.element instanceof HTMLInputElement) {
+                password = passwordField.element.value;
+            }
+
 
             if (this.page === 'signup') {
-
                 try {
-
                     // Получение значения полного имени из элемента формы
-                    const fullName = this.fields.find(item => item.name === 'fullName').element.value;
+                    const fullNameField: Field | undefined = this.fields.find(item => item.name === 'fullName');
+                    if (fullNameField && fullNameField.element instanceof HTMLInputElement) {
+                        fullName = fullNameField.element.value;
+                    }
+
+                    const passwordRepeatField: Field | undefined = this.fields.find(item => item.name === 'confirmPassword');
+                    if (passwordRepeatField && passwordRepeatField.element instanceof HTMLInputElement) {
+                        passwordRepeat= passwordRepeatField.element.value
+                    }
 
                     // Разделение полного имени на составляющие (фамилия и имя)
-                    const fullNameParts = fullName.split(" ");
-                    const lastName = fullNameParts[0];
-                    const name = fullNameParts.slice(1).join(" ");
+                    const fullNameParts: string[] = fullName.split(" ");
+                    const lastName: string = fullNameParts[0];
+                    const name: string = fullNameParts.slice(1).join(" ");
 
-                    const result = await CustomHttp.request(config.host + '/signup', 'POST', {
+                    const result: AuthType = await CustomHttp.request(config.host + '/signup', 'POST', {
                         name: name, // использование разделенного имени
                         lastName: lastName, // использование разделенной фамилии
                         password: password,
-                        passwordRepeat: this.fields.find(item => item.name === 'confirmPassword').element.value,
+                        passwordRepeat: passwordRepeat,
                         email: email,
                     });
 
@@ -194,15 +212,13 @@ page: string;
                 } catch (error) {
                     return console.log(error);
                 }
-
             }
 
             try {
-
                 // Отправка запроса на сервер для регистрации
-                const rememberMeElement = this.rememberMeElement;
-                const rememberMe = rememberMeElement ? rememberMeElement.checked : true;
-                const result = await CustomHttp.request(config.host + '/login', 'POST', {
+                const rememberMeElement: HTMLElement | null = this.rememberMeElement;
+                const rememberMe = rememberMeElement && rememberMeElement instanceof HTMLInputElement ? rememberMeElement.checked : true;
+                const result: AuthType = await CustomHttp.request(config.host + '/login', 'POST', {
                     password: password,
                     rememberMe: rememberMe, // Получение состояния rememberMeElement
                     email: email,
@@ -216,7 +232,7 @@ page: string;
 
                     //сохраняем токены через класс Auth 1:02 Проект Quiz: часть 4
                     Auth.setTokens(result.tokens.accessToken, result.tokens.refreshToken);
-                    
+
                     // сохраняем ино о пользователе обрабатываем в router
                     Auth.setUserInfo({
                         name: result.user.name,
@@ -232,44 +248,6 @@ page: string;
                 console.log(error);
             }
 
-
-
-
-            //////////////////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////
-
         }
     }
 }
-
-// переписаный
-// if (this.page === 'signin') {
-
-//     try {
-
-//         // Отправка запроса на сервер для регистрации
-//         const result = await CustomHttp.request('http://localhost:3000/api/login', 'POST', {
-//             password: this.fields.find(item => item.password === 'password').element.value,
-//             rememberMe: this.rememberMeElement.checked, // Получение состояния rememberMeElement
-//             email: this.fields.find(item => item.email === 'email').element.value,
-//         });
-
-//         if (result) {
-//             console.log(result)
-//             // Проверка наличия токенов и пользователя
-//             if (!result.user || !result.tokens || !result.tokens.accessToken || !result.tokens.refreshToken) {
-//                 throw new Error("Токены не были получены");
-//             }
-
-//             //сохраняем токены через класс Auth 1:02 Проект Quiz: часть 4
-//             Auth.setTokens(result.tokens.accessToken, tokens.refreshToken);
-
-//             // Перенаправление на главную страницу в случае успеха
-//             location.href = '#/'
-//         }
-
-//     } catch (error) {
-//         console.log(error);
-//     }
-
-// }

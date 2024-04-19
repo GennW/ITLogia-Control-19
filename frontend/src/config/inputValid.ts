@@ -2,6 +2,7 @@
 Класс InputValidation обеспечивает валидацию содержимого поля ввода, 
 препятствуя превышению длины введенных символов, а также форматирует 
 введенные данные в соответствии с заданными правилами.*/
+import * as bootstrap from 'bootstrap';
 
 
 export class InputValidation {
@@ -26,16 +27,19 @@ export class InputValidation {
 
     // Функция для показа всплывающей подсказки о превышении длины
     private showLengthExceedPopover(): void {
-        const popover = new bootstrap.Popover(this.inputElement, {
-            trigger: 'manual',
-            content: 'Длина должна быть не более 15 символов',
-        });
-        // Показываем всплывающую подсказку
-        popover.show();
-        // Скрываем всплывающую подсказку через 2 секунды
-        setTimeout(() => {
-            popover.hide();
-        }, 2000);
+        if (this.inputElement) {
+            const popover: bootstrap.Popover = new bootstrap.Popover(this.inputElement, {
+                trigger: 'manual',
+                content: 'Длина должна быть не более 15 символов',
+            });
+
+            // Показываем всплывающую подсказку
+            popover.show();
+            // Скрываем всплывающую подсказку через 2 секунды
+            setTimeout(() => {
+                popover.hide();
+            }, 2000);
+        }
     }
 
     // Функция для обработки ввода
@@ -64,6 +68,5 @@ export class InputValidation {
             // Привязываем метод handleInput к контексту класса, чтобы использовать this внутри метода
             this.inputElement.addEventListener('input', this.handleInput.bind(this));
         }
-
     }
 }
