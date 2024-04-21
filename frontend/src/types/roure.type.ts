@@ -16,4 +16,6 @@ export type RouteParamsType = {
     user_id?: number;
     idIncome?: string;
     idCost?: string;
+    operationId?: string,
+    
 };

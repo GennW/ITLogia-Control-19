@@ -15,8 +15,8 @@ export class IncomeCostsEdit extends incomeCostsForm {
         this.handleOperationCreationClick();
 
         // меняем заголовок "Редактирование дохода(расхода)"
-        if (this.operation.length > 0) {
-            if (this.operation[0].type === 'expense') {
+        if (this.operation) {
+            if (this.operation.type === 'expense') {
                 this.showHideTitleElements(false, true);
             } else {
                 this.showHideTitleElements(true, false);
@@ -48,7 +48,7 @@ export class IncomeCostsEdit extends incomeCostsForm {
     private async createOperation(selectedType: string, selectedOptionId: number, amountInput: string, dateInput: string, commentInput: string): Promise<void> {
 
         try {
-            const createOperation = await CustomHttp.request(config.host + '/operations/' + this.operation[0].id, 'PUT', {
+            const createOperation = await CustomHttp.request(config.host + '/operations/' + this.operation.id, 'PUT', {
                 type: selectedType,
                 amount: amountInput,
                 date: dateInput,

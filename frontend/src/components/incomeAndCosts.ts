@@ -13,6 +13,8 @@ import * as bootstrap from 'bootstrap';
 export class IncomeAndCosts extends FilterDate {
     routeParams: RouteParamsType[] | QueryParamsType;
     operations: IncomeAndCostOperationsType[] = [];
+    modalInstance: bootstrap.Modal | null = null;
+    modalElement: HTMLElement | null = document.getElementById('exampleModal');
 
     constructor() {
         super();
@@ -24,9 +26,14 @@ export class IncomeAndCosts extends FilterDate {
         super.init();
         this.btnCreateRedirectWithId();
         this.deleteOperationsWithUndefinedCategory();
+        this.initModal()
     }
 
-
+    private initModal(): void {
+        if (this.modalElement) {
+            this.modalInstance = new bootstrap.Modal(this.modalElement);
+        }
+    }
     async getOperations(period: string): Promise<void> {
         try {
             await super.getOperations(period);
@@ -152,21 +159,17 @@ export class IncomeAndCosts extends FilterDate {
         try {
             const result: IncomeAndCostOperationsType[] = await CustomHttp.request(config.host + '/operations/' + operationId, 'DELETE');
             if (result) {
-                let modalInstance: bootstrap.Modal | null = null;
 
-                // Удаление модального окна
-                const modal: HTMLElement | null = document.getElementById('exampleModal')
-                if (modal) {
-                    modalInstance = bootstrap.Modal.getOrCreateInstance(modal);
-                }
+                if (this.modalInstance) {
+                    this.updateTable();
+                    this.modalInstance.hide(); // Скрыть модальное окно
 
-                // console.log(modalInstance)
-
-                if (modalInstance) {
-                    this.updateTable()
-                    // Удаляем элемент
-                    modalInstance.hide(); // Скрыть модальное окно
                     location.href = '#/incomeAndCosts';
+                }
+                // Удаляем элемент <div class="modal-backdrop show"></div>
+                const modalBackdrop = document.querySelector('.modal-backdrop');
+                if (modalBackdrop) {
+                    modalBackdrop.remove();
                 }
 
             } else {

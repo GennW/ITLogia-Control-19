@@ -171,7 +171,7 @@ export class Form {
                 email = emailField.element.value;
             }
 
-            const passwordField: Field | undefined = this.fields.find(item => item.email === 'password');
+            const passwordField: Field | undefined = this.fields.find(item => item.password === 'password');
             if (passwordField && passwordField.element instanceof HTMLInputElement) {
                 password = passwordField.element.value;
             }

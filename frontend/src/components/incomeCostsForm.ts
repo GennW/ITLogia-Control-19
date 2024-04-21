@@ -7,7 +7,7 @@ import { CustomHttp } from "./services/custom-http";
 
 export class incomeCostsForm {
     protected routeParams: RouteParamsType | QueryParamsType;
-    operation: IncomeAndCostOperationsType[] = [];
+    operation: IncomeAndCostOperationsType;
     editOperation: string | null;
     income: RouteParamsType[] = [];
     amountInput: HTMLInputElement | string = '';
@@ -33,6 +33,7 @@ export class incomeCostsForm {
         this.typeSelect = document.getElementById('select') as HTMLSelectElement;
         this.operation = this.editOperation !== null ? JSON.parse(this.editOperation) : [];
 
+        
     }
 
     public showHideTitleElements(incomeVisible: boolean, costVisible: boolean): void {
@@ -46,16 +47,17 @@ export class incomeCostsForm {
         }
     }
 
-    private defineTransactionType(): void {
+    private defineTransactionType(): void { 
+        console.log('----------defineTransactionType----------',this.operation)
         // определяем тип (доход или расход) на основе параметров URL страницы 
         // incomeCostsCreate где параметр передаем через url и данных  на странице incomeCostsEdit
         // в коротой параметр (тип операции) передаем через localstorage
-        if (this.routeParams.idIncome === 'create-income-btn') {
+        if (this.routeParams.idIncome?.includes('create-income-btn') || (this.routeParams.operationId && this.operation.type === 'income')) {
             this.typeOptions = ['Доход'];
             this.selectedType = 'income';
             this.getCategoriesEndpointHost = '/categories/income';
             this.showHideTitleElements(true, false);
-        } else if (this.routeParams.idCost === 'create-cost-btn') {
+        } else if (this.routeParams.idCost?.includes('create-cost-btn') || (this.routeParams.operationId && this.operation.type === 'expense')) {
             this.typeOptions = ['Расход'];
             this.selectedType = 'expense';
             this.getCategoriesEndpointHost = '/categories/expense';
@@ -68,6 +70,8 @@ export class incomeCostsForm {
     private async renderSelects(): Promise<void> {
         const selectContainer: HTMLElement | null = document.querySelector('.col-4');
         this.typeOptions = [];
+        this.operation = this.editOperation !== null ? JSON.parse(this.editOperation) : [];
+        console.log('this.operation = this.editOperation !== null ?', this.operation)
         this.defineTransactionType();
 
         try {
@@ -106,16 +110,16 @@ export class incomeCostsForm {
         const selectElement: HTMLSelectElement | null = document.getElementById('select') as HTMLSelectElement;
 
         // Устанавливаем значение суммы
-        amountInput.value = this.operation[0].amount.toString();
+        amountInput.value = this.operation.amount.toString();
 
         // Устанавливаем значение даты
-        dateInput.value = this.operation[0].date;
+        dateInput.value = this.operation.date;
 
         // Устанавливаем значение комментария
-        commentInput.value = this.operation[0].comment;
+        commentInput.value = this.operation.comment;
 
         // Устанавливаем значение категории
-        selectElement.value = this.operation[0].category;
+        selectElement.value = this.operation.category;
     }
 
     private createTypeSelect(selectContainer: HTMLElement | null): void {
