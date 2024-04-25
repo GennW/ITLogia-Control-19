@@ -7,6 +7,7 @@ import { UrlManager } from "../utils/url-manager";
 import { FilterDate } from "./filterDate";
 import { CustomHttp } from "./services/custom-http";
 import * as bootstrap from 'bootstrap';
+import { Sidebar } from "./sidebar";
 
 
 
@@ -163,6 +164,7 @@ export class IncomeAndCosts extends FilterDate {
                 if (this.modalInstance) {
                     this.updateTable();
                     this.modalInstance.hide(); // Скрыть модальное окно
+                    new Sidebar();
                     document.body.style.overflowX = 'hidden';
                     document.body.style.overflowY = 'auto';
                     location.href = '#/incomeAndCosts';

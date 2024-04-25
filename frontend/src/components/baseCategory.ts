@@ -5,6 +5,7 @@ import { RouteParamsType } from "../types/roure.type";
 import { UrlManager } from "../utils/url-manager";
 import { CustomHttp } from "./services/custom-http";
 import * as bootstrap from 'bootstrap';
+import { Sidebar } from "./sidebar";
 
 
 
@@ -135,6 +136,7 @@ export abstract class BaseCategory {
                         location.href = `#${this.getListRoute()}`;
                         this.modalInstance?.hide();
                         this.getCategories();
+                        new Sidebar();
                         document.body.style.overflowX = 'hidden';
                         document.body.style.overflowY = 'auto';
                     }
