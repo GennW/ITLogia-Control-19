@@ -50,7 +50,7 @@ export class IncomeCostsCreate extends incomeCostsForm {
         try {
             const createOperation: IncomeAndCostOperationsType[] = await CustomHttp.request(config.host + '/operations', 'POST', {
                 type: selectedType,
-                amount: amountInput,
+                amount: Number(amountInput),
                 date: dateInput,
                 comment: commentInput,
                 category_id: selectedOptionId

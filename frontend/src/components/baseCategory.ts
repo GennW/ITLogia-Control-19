@@ -1,23 +1,43 @@
 import { DomCreateCard } from "../config/DOMCreate";
+import config from "../config/config";
 import { QueryParamsType } from "../types/query-params-type";
 import { RouteParamsType } from "../types/roure.type";
 import { UrlManager } from "../utils/url-manager";
 import { CustomHttp } from "./services/custom-http";
+import * as bootstrap from 'bootstrap';
+
+
 
 export abstract class BaseCategory {
     public routeParams: RouteParamsType[] | QueryParamsType;
     private categories: RouteParamsType[];
     protected createCard: DomCreateCard;
+    modalInstance: bootstrap.Modal | null = null;
+    modalElement: HTMLElement | null = document.getElementById('exampleModal');
+
 
     constructor() {
         this.routeParams = UrlManager.getQueryParams();
         this.categories = [];
         this.createCard = new DomCreateCard();
         this.getCategories();
+        this.initModal();
+    }
+    private initModal(): void {
+        if (this.modalElement) {
+            this.modalInstance = new bootstrap.Modal(this.modalElement);
+        }
+    }
+    private clearCategoriesContainer(): void {
+        const container: HTMLElement | null = document.querySelector('.main-items');
+        if (container) {
+            container.innerHTML = ''; // Очистка контейнера от текущих данных
+        }
     }
 
     private async getCategories(): Promise<void> {
         try {
+            this.clearCategoriesContainer();
             const result: RouteParamsType[] = await CustomHttp.request(this.getEndpoint());
             // Проверяем наличие результата и его тип
             if (result && Array.isArray(result)) {
@@ -31,7 +51,7 @@ export abstract class BaseCategory {
                     }
                 });
                 // Сохраняем результат в свойство costs и обрабатываем категории
-                this.categories  = result;
+                this.categories = result;
                 this.processCategories();
             } else {
                 console.error('Ошибка при получении категорий расходов: неверный формат данных');
@@ -70,14 +90,14 @@ export abstract class BaseCategory {
                 deleteButton.onclick = () => {
                     if (category.title !== undefined && category.id !== undefined) {
                         this.populateModal(category.title, category.id);
-                      } else {
+                    } else {
                         console.error('ID или title не определен для категории:', category);
-                      }
+                    }
                 }
 
                 if (deleteCategoryElement) {
                     // Добавление обработчика события клика для кнопки удаления модального окна
-                    deleteCategoryElement.onclick = () => {
+                    deleteCategoryElement.onclick = function () {
                         that.deleteCategory(<HTMLElement><unknown>this); // сконвертировать `this` в тип `unknown`, а затем в `HTMLElement`
                     }
                 }
@@ -102,6 +122,7 @@ export abstract class BaseCategory {
         }
     }
 
+
     private async deleteCategory(element: HTMLElement): Promise<void> {
         const dataId: string | null = element.getAttribute('data-id');
         if (dataId) {
@@ -112,6 +133,10 @@ export abstract class BaseCategory {
                         console.error('Ошибка при удалении категории:', deletionResult.error);
                     } else {
                         location.href = `#${this.getListRoute()}`;
+                        this.modalInstance?.hide();
+                        this.getCategories();
+                        document.body.style.overflowX = 'hidden';
+                        document.body.style.overflowY = 'auto';
                     }
                 }
             } catch (error) {

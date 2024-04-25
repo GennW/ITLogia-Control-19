@@ -163,7 +163,8 @@ export class IncomeAndCosts extends FilterDate {
                 if (this.modalInstance) {
                     this.updateTable();
                     this.modalInstance.hide(); // Скрыть модальное окно
-
+                    document.body.style.overflowX = 'hidden';
+                    document.body.style.overflowY = 'auto';
                     location.href = '#/incomeAndCosts';
                 }
                 // Удаляем элемент <div class="modal-backdrop show"></div>
@@ -171,6 +172,13 @@ export class IncomeAndCosts extends FilterDate {
                 if (modalBackdrop) {
                     modalBackdrop.remove();
                 }
+                // или так
+                // const modalBackdrop = document.querySelector('.modal-backdrop');
+                // if (modalBackdrop) {
+                //     modalBackdrop.classList.remove('show'); // Удалить класс 'show'
+                //     modalBackdrop.classList.add('fade'); // Добавить класс 'fade'
+                // }
+
 
             } else {
                 console.error('Получен пустой результат или ошибка на сервере');
